@@ -177,3 +177,52 @@ Definition lem := forall P : Prop, P \/ ~P.
 Definition de_not_and_not := forall P Q : Prop, ~ (~P /\ ~Q) -> P \/ Q.
 Definition imp_to_or := forall P Q : Prop, (P -> Q) -> (~P \/ Q).
 
+Theorem iso_peirce_classic : peirce -> classic.
+Proof.
+  unfold classic.
+  intros H P nnp.
+  apply (H P False).
+  intros p_t_f.
+  elim nnp.
+  assumption.
+Qed.
+
+Theorem iso_classic_lem : classic -> lem.
+Proof.
+  unfold lem.
+  intros Classic P; apply Classic.
+  unfold not. intros H. absurd P.
+  intros np; apply H; left; assumption.
+  apply Classic. intros nnp. apply H; right; assumption.
+Qed.
+
+Theorem iso_lem_de : classic -> de_not_and_not.
+Proof.
+  unfold de_not_and_not.
+  intros Classic P Q H.
+  apply Classic. intros H'. apply H.
+  split; intros np; apply H'.
+  left; assumption.
+  right; assumption.
+Qed.
+
+Theorem iso_de_imp_to : lem -> imp_to_or.
+Proof.
+  unfold imp_to_or.
+  intros Lem P Q H.
+  elim (Lem P).
+  intros p; right; apply H; assumption.
+  intros np; left; assumption.
+Qed.
+
+Theorem iso_imp_to_peirce : lem -> peirce.
+Proof.
+  unfold peirce.
+  intros Lem P Q H. elim (Lem P).
+  intros p; assumption.
+  intros np; apply H; intros p; absurd P; assumption.
+Qed.
+
+
+  
+  
