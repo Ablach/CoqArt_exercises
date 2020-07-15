@@ -223,6 +223,73 @@ Proof.
   intros np; apply H; intros p; absurd P; assumption.
 Qed.
 
+(* 5.9 *)
 
+Section fiveNine.
+
+  Variables (A : Set) (P Q : A -> Prop).
   
+  Lemma l13 : (exists x : A, P x \/ Q x) -> (ex P) \/ (ex Q).
+  Proof.
+    intros H. elim H.
+    intros a H'. elim H'.
+    intros pa; left; exists a; assumption.
+    intros qa; right; exists a; assumption.
+  Qed.
+
+  Lemma l14 : (ex P) \/ (ex Q) -> exists x : A, P x \/ Q x.
+  Proof.
+    intros H. elim H;
+                intros H'; elim H';
+                  intros a pa;
+                  exists a; [left | right]; assumption.
+  Qed.
+
+  Lemma l15 : (exists x : A, (forall R: A -> Prop, R x)) -> 2 = 3.
+  Proof.
+    intros H. elim H. intros a H'. elim (H' (fun x':A => False)).
+  Qed.
+
+  Lemma l16 : (forall x : A, P x) -> ~(exists y : A, ~ P y).
+  Proof.
+    intros H. intros H'. elim H'. intros a. elim H'.
+    unfold not.
+    intros x' H0 H1.
+    apply H1.
+    apply H.
+  Qed.
+
+End fiveNine.
   
+(* 5.10 *)
+
+Require Import ZArith.
+
+Theorem plus_permute2 :
+  forall n m p :  nat, n + m + p = n + p + m.
+Proof.
+  intros n m p.
+  rewrite <- plus_assoc.
+  pattern (m + p) at 1; rewrite plus_comm.
+  rewrite plus_assoc; reflexivity.
+Qed.
+
+(* 5.11 *)
+
+Theorem eq_trans :
+  forall (A : Type) (x y z : A), x = y -> y = z -> x = z.
+Proof.
+  intros A x y z H H'.
+  elim H.
+  elim H'.
+  assumption.
+Qed.
+
+Theorem eq_trans' :
+  forall (A : Type) (x y z : A), x = y -> y = z -> x = z.
+Proof.
+  intros A x y z H H'.
+  rewrite H; rewrite H'; reflexivity.
+Qed.
+
+
