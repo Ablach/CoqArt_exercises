@@ -102,4 +102,57 @@ Proof.
 Qed.
 
 
+Theorem bool_tex : forall b : bool,
+                   (bool_or b (bool_not b)) = true.
+Proof.
+  intros b; induction b; simpl; trivial.
+Qed.
 
+Theorem bool_eq_reflect : forall b1 b2 : bool,
+    (bool_eq b1 b2) = true -> b1 = b2.
+Proof.
+  intros b1 b2; induction b1; induction b2; simpl; trivial.
+  intros H; rewrite H; elim H; trivial.
+Qed.
+
+Theorem bool_eq_reflect2 : forall b1 b2 : bool,
+                           b1 = b2 -> (bool_eq b1 b2) = true.
+Proof.
+  intros b1 b2. induction b1; induction b2; simpl; trivial.
+  intros H; rewrite H; elim H; trivial.
+Qed.
+
+Theorem bool_not_or : forall b1 b2 : bool,
+    (bool_not (bool_or b1 b2)) =
+    (bool_and (bool_not b1) (bool_not b2)).
+Proof.
+  intros b1 b2; induction b1; induction b2; simpl; trivial.
+Qed.
+
+Theorem bool_or_and_distr: forall b1 b2 b3 : bool,
+        (bool_or (bool_and b1 b3) (bool_and b2 b3))
+        = (bool_and (bool_or b1 b2) b3).
+Proof.
+  intros b1 b2 b3. induction b1; induction b2; induction b3; simpl; trivial.
+Qed.
+
+(* 8 *)
+
+Require Import ZArith.
+
+Open Scope Z_scope.
+
+Record plane : Set := point {abscissa : Z; ordinate : Z}.
+
+Definition manhattan (a b : plane) : Z :=
+  (Z.abs (abscissa a - abscissa b)) + (Z.abs (ordinate a - ordinate b)).
+
+(* 9 *)
+
+Inductive vehicle : Set :=
+  bicycle : nat -> vehicle | motorized : nat -> nat -> vehicle.
+
+Definition nb_seats : vehicle -> nat :=
+  vehicle_rec (fun _ => nat)
+              (fun n => n)
+              (fun n _ => n).
