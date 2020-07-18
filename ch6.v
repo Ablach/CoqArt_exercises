@@ -156,3 +156,92 @@ Definition nb_seats : vehicle -> nat :=
   vehicle_rec (fun _ => nat)
               (fun n => n)
               (fun n _ => n).
+
+(* 10 *)
+
+Definition next_month : month -> month :=
+  month_rec (fun m => month)
+            Febuary March April May
+            June July August September
+            October November December January.
+
+Definition is_jan : month -> Prop :=
+  month_rect (fun month => Prop)
+             True False False False
+             False False False False
+             False False False False.
+
+(* 11 *)
+
+Definition bool_to_prop (b : bool) : Prop :=
+  match b with
+    true => True | _ => False
+  end.
+
+Theorem true_not_false : true <> false.
+Proof.
+  unfold not; intros H.
+  change (bool_to_prop false).
+  rewrite <- H.
+  simpl.
+  trivial.
+Qed.
+
+(* 12 *)
+  
+Definition vehicle_to_prop (v : vehicle) : Prop :=
+  match v with
+    bicycle _ => True
+  |  _ => False
+  end.
+
+Theorem bi_not_motor : forall n m l: nat,
+    bicycle n <> motorized m l.
+Proof.
+  intros n m l H.
+  change (vehicle_to_prop (motorized m l)).
+  rewrite <- H.
+  simpl.
+  trivial.
+Qed.
+
+(* 13 *)
+
+Require Import Arith.
+
+Open Scope nat_scope.
+
+Record RatPlus : Set :=
+  mkRat {top : nat; bottom:nat; bottom_condition: bottom <> 0}.
+
+Axiom eq_ratplus :
+  forall r r',
+    top r * bottom r' = top r' * bottom r ->
+    r = r'.
+
+Definition r : RatPlus.
+  apply (mkRat 2 4); auto with arith.
+Defined.
+
+Definition r' : RatPlus.
+  apply (mkRat 3 6); auto with arith.
+Defined.
+
+Theorem r_r'_eq : r = r'.
+Proof.
+  apply eq_ratplus; auto.
+Qed.
+
+Theorem r_not_r' : r <> r'.
+  unfold not. intros H. discriminate H.
+Qed.
+
+Theorem rat_contradiction : False.
+  absurd (r = r').
+  apply r_not_r'.
+  apply r_r'_eq.
+Qed.
+
+Reset eq_RatPlus.
+
+  
