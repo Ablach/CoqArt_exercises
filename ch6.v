@@ -409,3 +409,74 @@ Fixpoint zero_in_inf (n : nat) (t : Z_inf_tree) : bool :=
   end.
 
 (* 29 *)
+
+Ltac refl := reflexivity.
+
+Theorem plus_n_0 : forall n : nat, n = n + 0.
+Proof.
+  intro n. elim n. refl.
+  intros n' H. simpl. elim H. refl.
+Qed.
+
+(* 30 *)
+
+Fixpoint zb_to_zfb  (t : Z_btree) : Z_fbtree :=
+  match t with
+    Z_leaf => Z_fleaf
+  | Z_node x l r =>
+      Z_fnode x (fun b : bool => if b
+                                 then zb_to_zfb l
+                                 else zb_to_zfb r)
+  end.
+
+Fixpoint zfb_to_zb  (t : Z_fbtree) : Z_btree :=
+  match t with
+    Z_fleaf => Z_leaf
+  | Z_fnode x f => Z_node x
+                          (zfb_to_zb (f true))
+                          (zfb_to_zb (f false))
+  end.
+
+Theorem zb_to_zfb_and_back :
+  forall t : Z_btree, zfb_to_zb (zb_to_zfb t) = t.
+Proof.
+  induction t.
+  simpl; refl.
+  simpl; rewrite IHt1; rewrite IHt2; refl.
+Qed.
+
+(*
+Theorem zfb_to_zb_and_back :
+  forall t : Z_fbtree, zb_to_zfb (zfb_to_zb t) = t.
+*)
+
+(* 31 *)
+
+Fixpoint mult2 (n : nat) : nat :=
+  match n with
+    0 => 0
+  | S k => S (S (mult2 k))
+  end.
+
+Theorem plus_n_eq_x_2 :
+  forall n : nat, mult2 n = n + n.
+Proof.
+  induction n.
+  trivial.
+  simpl.
+  rewrite IHn.
+  rewrite plus_n_Sm.
+  trivial.
+Qed.
+  
+
+(* 32 *)
+
+Fixpoint sum_n (n : nat) : nat :=
+  match n with
+    0 => 0
+  | S p => S p + sum_n p
+  end.
+
+Theorem sum_n_plus_n : forall n, 2 * sum_n n = n + n.
+Proof.
