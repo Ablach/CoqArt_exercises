@@ -288,4 +288,124 @@ Definition pos_even_bool (p : positive) : bool :=
 (* 21 *)
 
 Definition pos_div4 (p : positive) : Z :=
-  
+  match p with
+    xO (xO n) | xO (xI n) => Zpos n
+  | xI (xI n) | xI (xO n) => Zpos n
+  | _ => 0
+  end.
+
+(* 22 *)
+
+Variable pos_mult : positive -> positive -> positive.
+
+Definition mul (n m : Z) : Z :=
+  match n,m with
+    Zpos x, Zpos y | Zneg x, Zneg y => Zpos (pos_mult x y)
+  | Zpos x, Zneg y | Zneg x, Zpos y => Zneg (pos_mult x y)
+  | _,_ => Z0
+  end.
+
+(* 23 *)
+
+Inductive l : Set :=
+    l_and : l -> l -> l
+  | l_or : l -> l -> l
+  | not_l : l -> l
+  | l_imp : l -> l -> l
+  | l_t : l
+  | l_f : l.
+
+Fixpoint l_eval (form : l) : l :=
+  match form with
+  | l_and la lb => match (l_eval la),(l_eval lb) with
+                     l_t, l_t => l_t
+                   | _,_ => l_f
+                   end
+  | l_or la lb => match (l_eval la),(l_eval lb) with
+                    l_t,_ | _,l_t => l_t
+                  | _,_ => l_f
+                  end
+  | not_l la => match l_eval la with
+                  l_t => l_f
+                | _ => l_t
+                end
+  | l_imp la lb => match (l_eval la),(l_eval lb) with
+                     _,l_t | l_f, l_f => l_t
+                   | _,_ => l_f
+                   end
+  | l_t => l_t
+  | l_f => l_f
+  end.
+
+(* 24 *)
+
+Inductive rat : Set :=
+  one : rat | n_of_x : rat -> rat | d_of_x : rat -> rat.
+
+(* 25 *)
+
+Inductive Z_btree : Set :=
+  Z_leaf : Z_btree | Z_node : Z -> Z_btree -> Z_btree -> Z_btree.
+
+Fixpoint value_present (z : Z) (t : Z_btree) : bool :=
+  match t with
+    Z_leaf => false
+  | Z_node x l r =>
+    if Zeq_bool z x then true
+    else match value_present z l with
+           true => true
+         | _ => value_present z r
+         end
+  end.
+
+(* 26 *)
+
+Fixpoint power (z : Z) (n : nat) : Z :=
+  match n with
+    0%nat => 1 | S p => z * (power z p)
+  end.
+
+Fixpoint discrete_log (p : positive) : nat :=
+  match p with
+    xH => 0%nat
+  | xO n | xI n => S (discrete_log n)
+  end.
+
+(* 27 *)
+
+
+Inductive Z_fbtree : Set :=
+  Z_fleaf : Z_fbtree
+| Z_fnode : Z -> (bool -> Z_fbtree) -> Z_fbtree.
+
+Fixpoint fzero_present (t : Z_fbtree) : bool :=
+  match t with
+    Z_fleaf => false
+  | Z_fnode z f =>
+    if Zeq_bool z 0%Z then true
+    else match fzero_present (f true) with
+           true => true
+         | _ => fzero_present (f false)
+         end
+  end.
+
+(* 28 *)
+
+Inductive Z_inf_tree : Set :=
+  Z_inf_leaf : Z_inf_tree
+| Z_inf_branch : Z -> (nat -> Z_inf_tree) -> Z_inf_tree.
+
+Fixpoint sum_or (n : nat) (f : nat -> bool) : bool :=
+  match n with
+    0 => false
+  | S k => if f (S k) then true else sum_or k f
+  end.
+
+Fixpoint zero_in_inf (n : nat) (t : Z_inf_tree) : bool :=
+  match n,t with
+  | S k, Z_inf_branch z f => if Zeq_bool z 0 then true else sum_or k (fun x : nat => zero_in_inf k (f x))
+  | Z, Z_inf_branch z _ => Zeq_bool z 0
+  | _, Z_inf_leaf => false
+  end.
+
+(* 29 *)
