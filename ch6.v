@@ -244,4 +244,48 @@ Qed.
 
 Reset eq_RatPlus.
 
+(* 15 *)
+
+Definition true_under_three (n : nat) : bool :=
+  match n with
+    0 => true
+  | 1 => true
+  | 2 => true
+  | _ => false
+  end.
+
+Eval compute in true_under_three 2.
+
+(* 16 *)
+
+Fixpoint rev_plus (n m : nat) {struct m} : nat :=
+  match m with 0 => n | S p => S (rev_plus n p) end.
+
+Eval compute in rev_plus 3 5.
+
+(* 17 *)
+
+Fixpoint sum_f (n : nat) (f : nat -> Z) : Z :=
+  match n with
+    0 => 0
+  | S k => f k + sum_f k f
+  end.
+
+(* 18 *)
+
+Fixpoint two_power (n : nat) : nat :=
+  match n with
+    0 => 1
+  | S k => 2 * two_power k
+  end.
+
+
+(* 20 *)
+
+Definition pos_even_bool (p : positive) : bool :=
+  match p with xO _ => true | _ => false end.
+
+(* 21 *)
+
+Definition pos_div4 (p : positive) : Z :=
   
