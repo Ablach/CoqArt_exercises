@@ -340,7 +340,7 @@ Fixpoint l_eval (form : l) : l :=
 (* 24 *)
 
 Inductive rat : Set :=
-  one : rat | n_of_x : rat -> rat | d_of_x : rat -> rat.
+  one : rat | N : rat -> rat | D : rat -> rat.
 
 (* 25 *)
 
@@ -478,5 +478,216 @@ Fixpoint sum_n (n : nat) : nat :=
   | S p => S p + sum_n p
   end.
 
-Theorem sum_n_plus_n : forall n, 2 * sum_n n = n + n.
+(* misprint?  *)
+  
+(* 33 *)
+
+Require Import Arith.
+
+Theorem n_lt_sum_n :
+  forall n : nat, n <= sum_n n.
 Proof.
+  induction n.
+  refl.
+  simpl.
+  rewrite le_n_S.
+  2: apply IHn.
+  rewrite plus_n_Sm.
+  apply le_plus_r.
+Qed.
+
+(* 34 *)
+
+Require Import List.
+
+Definition fst_2 (A : Set) (l : list A) : list A :=
+  match l with
+    x :: y :: _ => x :: y :: nil
+  | _ => nil
+  end.
+
+(* 35 *)
+  
+Fixpoint fst_n (A : Set) (n : nat) (l : list A) {struct n} : list A :=
+  match n,l with
+    S k, x :: xs => x :: fst_n _ k xs
+  | _,_ => nil
+  end.
+
+(* 36 *)
+
+Fixpoint sum_list (l : list Z) : Z :=
+  match l with
+    x :: xs => x + sum_list xs
+  | _ => 0
+  end.
+
+(* 37 *)
+
+Fixpoint n_ones (n : nat) : list Z :=
+  match n with  
+    S k => 1%Z :: n_ones k
+  | O => nil
+  end.
+
+(* 38 *)
+
+Fixpoint one_to_n (n : nat) : list Z :=
+  match n with
+    O => nil
+  | S k => one_to_n k ++ Z.of_nat (S k) :: nil
+  end.
+
+(* 39 *)
+
+Fixpoint nth_option (A:Set)(n:nat)(l:list A) {struct l}
+  : option A :=
+  match n, l with
+  | O, cons a tl =>  Some a
+  | S p, cons a tl => nth_option _ p tl
+  | n, nil => None
+  end.
+
+Fixpoint nth_option' (A : Set) (n : nat) (l : list A) {struct n}
+  : option A :=
+  match n,l with
+    O, a :: t => Some a
+  | S k, a :: t => nth_option _ k t
+  | n, nil => None
+  end.
+
+Theorem nth_eq_prime :
+  forall (A : Set) (n : nat) (l : list A),
+    nth_option A n l = nth_option' A n l.
+Proof.
+  intros A n l. induction n; induction l; simpl; trivial.
+Qed.
+
+(* 40 *)
+
+Theorem none_means_shorter :
+  forall (A : Set) (n : nat) (l : list A),
+    nth_option A n l = None -> length l <= n.
+Proof.
+  simple induction n.
+  destruct l0. simpl. trivial.
+  simpl. intros H. absurd (Some a = None). discriminate H.
+  assumption.
+  intros n0 H l H'.
+  destruct l. simpl. auto with arith.
+  simpl. auto with arith.
+Qed.
+
+(* 41 *)
+
+Fixpoint la_to_fa (A : Set) (f : A -> bool) (l : list A) {struct l} : option A :=
+  match l with
+    x :: xs => if f x then Some x else la_to_fa _ f xs
+  | _ => None
+  end.
+
+(* 42 *)
+
+Fixpoint split_pairs (A B : Set) (l : list (A*B)) {struct l} : (list A) * (list B) :=
+  match l with
+    (a,b) :: ps => ((a :: fst (split_pairs _ _ ps)) , (b :: snd (split_pairs _ _ ps)))
+  | _ => (nil,nil)
+  end.
+
+Fixpoint combine (A B : Set) (la : list A) (lb : list B) {struct la} : list (A*B) :=
+  match la,lb with
+    x::xs,y::ys => (x,y) :: combine _ _ xs ys
+  | _,_ => nil
+  end.
+
+Theorem cmb_split_eq_og :
+  forall (A B : Set) (l : list (A*B)), combine A B (fst (split_pairs A B l)) (snd (split_pairs A B l)) = l.
+Proof.
+  induction l0. simpl. trivial.
+  case a. intros a0 b. simpl. rewrite IHl0. trivial.
+Qed.
+
+(* 43 *)
+
+Inductive btree (A : Set) : Set :=
+  leaf : btree A
+| node : A -> btree A -> btree A -> btree A.
+
+Fixpoint Z_to_btree (t : Z_btree) : btree Z :=
+  match t with
+    Z_leaf => leaf _
+  | Z_node x l r => node _ x (Z_to_btree l) (Z_to_btree r)
+  end.
+
+Fixpoint btree_to_ztree (t : btree Z) : Z_btree :=
+  match t with
+    leaf _ => Z_leaf
+  | node _ x l r => Z_node x (btree_to_ztree l) (btree_to_ztree r)
+  end.
+
+Theorem iso_btree_z_zbtree :
+  forall t : Z_btree, btree_to_ztree (Z_to_btree t) = t.
+Proof.
+  intros t. induction t.
+  simpl; trivial.
+
+  simpl; rewrite IHt1; rewrite IHt2; trivial.
+Qed.
+
+(* 44 *)
+
+(*
+Inductive rat : Set :=
+  one : rat | N : rat -> rat | D : rat -> rat.
+ *)
+
+Fixpoint frac (r : rat) : nat * nat :=
+  match r with
+    one => (1,1)
+  | N r => let (n,d) := frac r in (n + d, d)
+  | D r => let (n,d) := frac r in (d, n + d)
+  end.
+
+
+(* 45 / 46 skipping till later *)
+
+Inductive htree (A : Set) : nat -> Set :=
+  hleaf : A -> htree A 0
+| hnode : forall n : nat, A -> htree A n -> htree A n -> htree A (S n).
+
+(* 47 *)
+
+Fixpoint n_to_tree (n : nat) : htree Z n :=
+  match n with
+    S k => hnode _ _ (Z.of_nat (S k)) (n_to_tree k) (n_to_tree k)
+  | O => hleaf Z 0%Z
+  end.
+
+(* 48 *)
+
+Inductive binary_word : nat -> Set :=
+  empty_bin : binary_word 0
+| cons_bin : forall m : nat, bool -> binary_word m -> binary_word (S m).
+
+Fixpoint binary_word_concat (n m : nat) (w : binary_word n) (w' : binary_word m) {struct w}
+  : binary_word (n + m) :=
+  match w in binary_word p return binary_word (p + m) with
+    empty_bin => w'
+  | cons_bin q b w'' => cons_bin (q + m) b (binary_word_concat q m w'' w')
+  end.
+
+(* 49  and 50 skipping for now*)
+
+(* 51 *)
+
+Lemma l1 : forall x y : Empty_set, x = y.
+Proof.
+  intros x y.
+  induction x.
+Qed.
+
+Lemma l2 : forall x y : Empty_set, ~ x=y.
+Proof.
+  intros x y.
+  induction x.
+Qed.
